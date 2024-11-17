@@ -90,7 +90,7 @@ public partial class MainPage : ContentPage
       return;
     }
 
-    var valueToWrite = Encoding.UTF8.GetBytes(CharacteristicValueEntry.Text);
+    var valueToWrite = new byte[] { (byte)(int.Parse(CharacteristicValueEntry.Text) > 0 ?0x01:0x00) };
     try
     {
       await characteristic.WriteAsync(valueToWrite);
