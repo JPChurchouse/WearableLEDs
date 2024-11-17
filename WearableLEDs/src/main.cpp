@@ -8,10 +8,12 @@
 bool Running = false;
 CRGB leds[NUM_LEDS];
 
-BLEService ledService("19B10000-E8F2-537E-4F6C-D104768A1214"); // Bluetooth® Low Energy LED Service
+BLEService Service("19B10000-E8F2-537E-4F6C-D104768A1214"); // Bluetooth® Low Energy LED Service
 
 // Bluetooth® Low Energy LED Switch Characteristic - custom 128-bit UUID, read and writable by central
-BLEByteCharacteristic switchCharacteristic("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite);
+BLEByteCharacteristic Chara("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite);
+BLEDescriptor Descript ("2901","NameTest");
+
 
 void setup()
 {
@@ -33,22 +35,24 @@ void setup()
 
   // set advertised local name and service UUID:
   BLE.setLocalName("LED");
-  BLE.setAdvertisedService(ledService);
+  BLE.setAdvertisedService(Service);
 
   // add the characteristic to the service
-  ledService.addCharacteristic(switchCharacteristic);
+  Chara.addDescriptor(Descript);
+  Service.addCharacteristic(Chara);
 
   // add service
-  BLE.addService(ledService);
+  BLE.addService(Service);
 
   // set the initial value for the characeristic:
-  switchCharacteristic.writeValue(0);
+  Chara.writeValue(0);
 
   // start advertising
   BLE.advertise();
 
   Serial.println("BLE LED Peripheral");
 }
+
 
 void loop()
 {
@@ -67,10 +71,10 @@ void loop()
     {
       // if the remote device wrote to the characteristic,
       // use the value to control the LED:
-      if (switchCharacteristic.written())
+      if (Chara.written())
       {
-          Serial.println(switchCharacteristic.value());
-        if (switchCharacteristic.value())
+          Serial.println(Chara.value());
+        if (Chara.value())
         { // any value other than 0
           Serial.println("LED on");
 
