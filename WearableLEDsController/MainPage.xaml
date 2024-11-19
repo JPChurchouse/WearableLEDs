@@ -12,7 +12,7 @@
       </ListView.ItemTemplate>
     </ListView>
     <Button Text="Start Scan" Clicked="StartScanClicked"/>
-    <Entry x:Name="CharacteristicValueEntry" Placeholder="Enter value to write"/>
-    <Button Text="Write to Characteristic" Clicked="WriteToCharacteristicClicked"/>
+    <Label Text="Toggle LED"/>
+    <Switch x:Name="LedSwitch" Toggled="LedSwitchToggled"/>
   </StackLayout>
 </ContentPage>

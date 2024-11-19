@@ -68,7 +68,7 @@ public partial class MainPage : ContentPage
     }
   }
 
-  private async void WriteToCharacteristicClicked(object sender, EventArgs e)
+  private async void LedSwitchToggled(object sender, ToggledEventArgs e)
   {
     if (_connectedDevice == null)
     {
@@ -90,15 +90,22 @@ public partial class MainPage : ContentPage
       return;
     }
 
-    var valueToWrite = new byte[] { (byte)(int.Parse(CharacteristicValueEntry.Text) > 0 ?0x01:0x00) };
+    // Get the boolean value from the Switch toggle event
+    bool isOn = e.Value;
+
+    // Convert the boolean to a byte (0x01 for true, 0x00 for false)
+    byte[] valueToWrite = new byte[] { isOn ? (byte)0x01 : (byte)0x00 };
+
     try
     {
       await characteristic.WriteAsync(valueToWrite);
-      await DisplayAlert("Success", "Value written to characteristic.", "OK");
+      //await DisplayAlert("Success", $"LED {(isOn ? "On" : "Off")}", "OK");
     }
     catch (Exception ex)
     {
       await DisplayAlert("Error", $"Failed to write: {ex.Message}", "OK");
     }
   }
+
+
 }
