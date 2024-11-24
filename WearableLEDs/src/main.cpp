@@ -12,8 +12,8 @@ BLEService Service("19B10000-E8F2-537E-4F6C-D104768A1214"); // Bluetooth® Low E
 
 // Bluetooth® Low Energy LED Switch Characteristic - custom 128-bit UUID, read and writable by central
 BLEByteCharacteristic Chara("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite);
-BLEDescriptor Descript ("2901","NameTest");
-
+BLEByteCharacteristic Chara1("d02a2828-2b77-4685-89f0-2b9f0ba38da5", BLERead | BLEWrite);
+BLEDescriptor Descript("2901", "NameTest");
 
 void setup()
 {
@@ -34,25 +34,26 @@ void setup()
   }
 
   // set advertised local name and service UUID:
-  BLE.setLocalName("LED");
+  BLE.setLocalName("LED Control");
   BLE.setAdvertisedService(Service);
 
   // add the characteristic to the service
   Chara.addDescriptor(Descript);
   Service.addCharacteristic(Chara);
+  Service.addCharacteristic(Chara1);
 
   // add service
   BLE.addService(Service);
 
   // set the initial value for the characeristic:
   Chara.writeValue(0);
+  Chara1.writeValue(0);
 
   // start advertising
   BLE.advertise();
 
   Serial.println("BLE LED Peripheral");
 }
-
 
 void loop()
 {
@@ -73,20 +74,29 @@ void loop()
       // use the value to control the LED:
       if (Chara.written())
       {
-          Serial.println(Chara.value());
-        if (Chara.value())
-        { // any value other than 0
-          Serial.println("LED on");
+        Serial.print("Option: ");
+        Serial.println(Chara.value());
 
+        if (Chara.value())
+        { 
+          // any value other than 0
+          Serial.println(" (on)");
           leds[0] = CRGB::White;
           FastLED.show();
         }
         else
-        { // a 0 value
-          Serial.println( "LED off" );
+        { 
+          // a 0 value
+          Serial.println(" (off)");
           leds[0] = CRGB::Black;
           FastLED.show();
         }
+      }
+
+      if (Chara1.written())
+      {
+        Serial.print("Option: ");
+        Serial.println(Chara.value());
       }
     }
 

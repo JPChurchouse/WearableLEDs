@@ -30,7 +30,7 @@
 *.exe
 *.out
 *.app
-WearableLEDs/.vscode
-WearableLEDsController/.vs
-WearableLEDsController/obj
-WearableLEDsController/bin
+*/obj
+*/.vs
+*/bin
+*/.vscode
