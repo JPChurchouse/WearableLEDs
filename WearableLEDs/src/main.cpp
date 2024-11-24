@@ -74,8 +74,8 @@ void loop()
       // use the value to control the LED:
       if (Chara.written())
       {
-        Serial.print("Option: ");
-        Serial.println(Chara.value());
+        Serial.print("Enabled: ");
+        Serial.print(Chara.value());
 
         if (Chara.value())
         { 
@@ -96,7 +96,7 @@ void loop()
       if (Chara1.written())
       {
         Serial.print("Option: ");
-        Serial.println(Chara.value());
+        Serial.println(Chara1.value());
       }
     }
 
