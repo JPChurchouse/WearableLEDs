@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace WearableLEDsController
+namespace Controller
 {
     public class Program
     {

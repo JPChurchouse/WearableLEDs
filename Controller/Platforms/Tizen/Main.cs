@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-namespace WearableLEDsController
+namespace Controller
 {
     internal class Program : MauiApplication
     {

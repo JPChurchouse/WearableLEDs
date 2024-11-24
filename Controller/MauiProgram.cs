@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace WearableLEDsController
+namespace Controller
 {
     public static class MauiProgram
     {

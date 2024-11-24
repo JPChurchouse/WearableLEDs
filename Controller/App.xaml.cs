@@ -1,4 +1,4 @@
-﻿namespace WearableLEDsController
+﻿namespace Controller
 {
     public partial class App : Application
     {
