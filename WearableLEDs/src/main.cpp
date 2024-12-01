@@ -11,9 +11,8 @@ CRGB leds[NUM_LEDS];
 BLEService Service("19B10000-E8F2-537E-4F6C-D104768A1214"); // Bluetooth® Low Energy LED Service
 
 // Bluetooth® Low Energy LED Switch Characteristic - custom 128-bit UUID, read and writable by central
-BLEByteCharacteristic Chara("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite);
-BLEByteCharacteristic Chara1("d02a2828-2b77-4685-89f0-2b9f0ba38da5", BLERead | BLEWrite);
-BLEDescriptor Descript("2901", "NameTest");
+BLEByteCharacteristic ToggleChara("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify | BLEIndicate);
+BLEByteCharacteristic ModeChara("d02a2828-2b77-4685-89f0-2b9f0ba38da5", BLERead | BLEWrite);
 
 void setup()
 {
@@ -28,7 +27,6 @@ void setup()
   if (!BLE.begin())
   {
     Serial.println("starting Bluetooth® Low Energy module failed!");
-
     while (1)
       ;
   }
@@ -38,21 +36,38 @@ void setup()
   BLE.setAdvertisedService(Service);
 
   // add the characteristic to the service
-  Chara.addDescriptor(Descript);
-  Service.addCharacteristic(Chara);
-  Service.addCharacteristic(Chara1);
+  BLEDescriptor desc("2901", "Enabled Status");
+  ToggleChara.addDescriptor(desc);
+  Service.addCharacteristic(ToggleChara);
+  Service.addCharacteristic(ModeChara);
 
   // add service
   BLE.addService(Service);
 
   // set the initial value for the characeristic:
-  Chara.writeValue(0);
-  Chara1.writeValue(0);
+  ToggleChara.writeValue(0);
+  ModeChara.writeValue(0);
 
   // start advertising
   BLE.advertise();
 
   Serial.println("BLE LED Peripheral");
+}
+
+void ToggleValue(byte value)
+{
+  Serial.print("value ");
+  if (value)
+  {
+    Serial.println("(on)");
+    leds[0] = CRGB::White;
+  }
+  else
+  {
+    Serial.println("(off)");
+    leds[0] = CRGB::Black;
+  }
+  FastLED.show();
 }
 
 void loop()
@@ -72,31 +87,25 @@ void loop()
     {
       // if the remote device wrote to the characteristic,
       // use the value to control the LED:
-      if (Chara.written())
+      if (ToggleChara.written())
       {
-        Serial.print("Enabled: ");
-        Serial.print(Chara.value());
-
-        if (Chara.value())
-        { 
-          // any value other than 0
-          Serial.println(" (on)");
-          leds[0] = CRGB::White;
-          FastLED.show();
-        }
-        else
-        { 
-          // a 0 value
-          Serial.println(" (off)");
-          leds[0] = CRGB::Black;
-          FastLED.show();
-        }
+        Serial.print("Toggle: ");
+        ToggleValue(ToggleChara.value());
       }
 
-      if (Chara1.written())
+      if (ModeChara.written())
       {
-        Serial.print("Option: ");
-        Serial.println(Chara1.value());
+        Serial.print("Mode: ");
+        Serial.println(ModeChara.value());
+      }
+
+      if (Serial.available())
+      {
+        byte buffer[32] = {};
+        Serial.readBytes(buffer, 32);
+        byte v = buffer[0];
+        ToggleChara.writeValue(v);
+        ToggleValue(v);
       }
     }
 

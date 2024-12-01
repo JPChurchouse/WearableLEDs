@@ -21,16 +21,20 @@ public class MainActivity : MauiAppCompatActivity
   protected override void OnCreate(Bundle savedInstanceState)
   {
     base.OnCreate(savedInstanceState);
-    RequestBluetoothPermissions();
+    RequestPermissions();
   }
 
-  private void RequestBluetoothPermissions()
+  private void RequestPermissions()
   {
-    string[] requiredPermissions = {
-            Manifest.Permission.BluetoothScan,
-            Manifest.Permission.BluetoothConnect,
-            Manifest.Permission.AccessFineLocation
-        };
+    string[] requiredPermissions = 
+    [
+      Manifest.Permission.Bluetooth,
+      Manifest.Permission.BluetoothAdmin,
+      Manifest.Permission.BluetoothScan,
+      Manifest.Permission.BluetoothConnect,
+      Manifest.Permission.AccessFineLocation,
+      Manifest.Permission.NearbyWifiDevices,
+    ];
 
     var missingPermissions = requiredPermissions.Where(permission =>
         ContextCompat.CheckSelfPermission(this, permission) != Permission.Granted).ToArray();
