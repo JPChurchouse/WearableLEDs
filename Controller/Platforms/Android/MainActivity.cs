@@ -4,7 +4,6 @@ using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
-using Microsoft.Maui;
 
 namespace Controller;
 
@@ -26,14 +25,14 @@ public class MainActivity : MauiAppCompatActivity
 
   private void RequestPermissions()
   {
-    string[] requiredPermissions = 
+    string[] requiredPermissions =
     [
       Manifest.Permission.Bluetooth,
       Manifest.Permission.BluetoothAdmin,
       Manifest.Permission.BluetoothScan,
       Manifest.Permission.BluetoothConnect,
       Manifest.Permission.AccessFineLocation,
-      Manifest.Permission.NearbyWifiDevices,
+      Manifest.Permission.AccessCoarseLocation,
     ];
 
     var missingPermissions = requiredPermissions.Where(permission =>

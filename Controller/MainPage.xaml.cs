@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using Plugin.BLE;
+using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 
 namespace Controller;
@@ -28,25 +29,37 @@ public partial class MainPage : ContentPage
     FoundDevices = [];
     DeviceList.ItemsSource = FoundDevices;
 
-    Adapter.DeviceDiscovered += (_, args) =>
-    {
-      string info = $"Discovered Device: {args.Device.Name} - {args.Device.Id}";
-      StatusLabel.Text += "\r\n" + info;
-      //Console.WriteLine(info);
-      if (!FoundDevices.Any(d => d.Id == args.Device.Id))
-      {
-        FoundDevices.Add(args.Device);
-      }
-    };
+    Adapter.DeviceDiscovered += Adapter_DeviceDiscovered;
+    Adapter.ScanTimeoutElapsed += Adapter_ScanTimeoutElapsed;
 
     _ = ScanAsync();
+  }
+
+  private void Adapter_ScanTimeoutElapsed(object? sender, EventArgs e)
+  {
+    if (FoundDevices.Count > 0)
+    {
+      _ = ConnectToDeviceAsync(FoundDevices[0]);
+    }
+  }
+
+  private void Adapter_DeviceDiscovered(object? sender, Plugin.BLE.Abstractions.EventArgs.DeviceEventArgs args)
+  {/*
+    string info = $"Discovered Device: {args.Device.Name} - {args.Device.Id}";
+    StatusLabel.Text += "\r\n" + info;
+    //Console.WriteLine(info);
+    */
+    if (!FoundDevices.Any(d => d.Id == args.Device.Id))
+    {
+      FoundDevices.Add(args.Device);
+    }
   }
 
 
   private void ScanButton_Clicked(object sender, EventArgs e) => _ = ScanAsync();
   private async Task ScanAsync()
   {
-    if (await ConnectKnownAsync()) return;
+    //if (await ConnectKnownAsync()) return;
     try
     {
       if (BLE.State != BluetoothState.On)
@@ -59,7 +72,11 @@ public partial class MainPage : ContentPage
       StatusLabel.Text = "Scanning for devices...";
       FoundDevices.Clear();
 
-      await Adapter.StartScanningForDevicesAsync();
+      ScanFilterOptions filter = new()
+      {
+        ServiceUuids = [TargetServiceUUID]
+      };
+      await Adapter.StartScanningForDevicesAsync(filter);
 
       StatusLabel.Text = "Scanning complete. Select a device to connect.";
     }
@@ -84,7 +101,7 @@ public partial class MainPage : ContentPage
   {
     try
     {
-     var device =  await Adapter.ConnectToKnownDeviceAsync(Guid.Parse("00000000-0000-0000-0000-c8f09ef25b96"));
+      var device = await Adapter.ConnectToKnownDeviceAsync(Guid.Parse("00000000-0000-0000-0000-c8f09ef25b96"));
       Device = device;
       TargetService = await device.GetServiceAsync(TargetServiceUUID);
 
@@ -98,7 +115,7 @@ public partial class MainPage : ContentPage
 
       StatusLabel.Text = "Connected";
       await ConnectedAsync();
-        return true;
+      return true;
     }
     catch (Exception ex)
     {
