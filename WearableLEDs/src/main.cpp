@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include <ArduinoBLE.h>
+#include "LEDHandler.hpp"
 
 #define NUM_LEDS 16
 #define DATA_PIN 14
@@ -21,7 +22,7 @@ void setup()
     ;
 
   // set LED pin to output mode
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
 
   // begin initialization
   if (!BLE.begin())
