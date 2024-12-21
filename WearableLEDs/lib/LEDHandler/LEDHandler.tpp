@@ -2,8 +2,7 @@
 #include <LEDHandler.hpp>
 
 template <int PIN>
-LEDHandler<PIN>::LEDHandler(int ledCount)
-    : count(ledCount)
+LEDHandler<PIN>::LEDHandler(int ledCount) : count(ledCount)
 {
   LEDs = new CRGB[count];
   FastLED.addLeds<WS2812B, PIN, GRB>(LEDs, count);
@@ -20,4 +19,10 @@ void LEDHandler<PIN>::update()
 {
   fill_solid(LEDs, count, CRGB::Green);
   FastLED.show();
+}
+
+template <int PIN>
+CRGB &LEDHandler<PIN>::operator[](int index)
+{
+  return LEDs[index];
 }

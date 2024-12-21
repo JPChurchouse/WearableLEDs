@@ -1,28 +1,10 @@
-#include <Arduino.h>
-#include <FastLED.h>
-#include <ArduinoBLE.h>
-#include "LEDHandler.hpp"
-
-#define NUM_LEDS 16
-#define DATA_PIN 14
-
-bool Running = false;
-CRGB leds[NUM_LEDS];
-
-BLEService Service("19B10000-E8F2-537E-4F6C-D104768A1214"); // Bluetooth® Low Energy LED Service
-
-// Bluetooth® Low Energy LED Switch Characteristic - custom 128-bit UUID, read and writable by central
-BLEByteCharacteristic ToggleChara("19B10001-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify | BLEIndicate);
-BLEByteCharacteristic ModeChara("d02a2828-2b77-4685-89f0-2b9f0ba38da5", BLERead | BLEWrite);
+#include "main.hpp"
 
 void setup()
 {
   Serial.begin(115200);
   while (!Serial)
     ;
-
-  // set LED pin to output mode
-  FastLED.addLeds<WS2812B, DATA_PIN>(leds, NUM_LEDS);
 
   // begin initialization
   if (!BLE.begin())
@@ -61,12 +43,12 @@ void ToggleValue(byte value)
   if (value)
   {
     Serial.println("(on)");
-    leds[0] = CRGB::White;
+    LEDs[0] = CRGB::White;
   }
   else
   {
     Serial.println("(off)");
-    leds[0] = CRGB::Black;
+    LEDs[0] = CRGB::Black;
   }
   FastLED.show();
 }

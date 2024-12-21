@@ -16,6 +16,10 @@ public:
   ~LEDHandler();
 
   void update();
+
+  CRGB &operator[](int index);
 };
+
+#include "LEDHandler.tpp"
 
 #endif
