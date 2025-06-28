@@ -43,12 +43,12 @@ void ToggleValue(byte value)
   if (value)
   {
     Serial.println("(on)");
-    LEDs[0] = CRGB::White;
+    //LEDs[0] = CRGB::White;
   }
   else
   {
     Serial.println("(off)");
-    LEDs[0] = CRGB::Black;
+    //LEDs[0] = CRGB::Black;
   }
   FastLED.show();
 }
@@ -96,4 +96,8 @@ void loop()
     Serial.print(F("Disconnected from central: "));
     Serial.println(central.address());
   }
+
+
+  LEDs_A.Update();
+  LEDs_B.Update();
 }

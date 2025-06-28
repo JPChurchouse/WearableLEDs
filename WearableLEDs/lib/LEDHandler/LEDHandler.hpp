@@ -15,7 +15,7 @@ public:
   LEDHandler(int ledCount);
   ~LEDHandler();
 
-  void update();
+  void Update();
 
   CRGB &operator[](int index);
 };
