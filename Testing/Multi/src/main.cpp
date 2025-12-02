@@ -1,35 +1,30 @@
-/* ESP32 test: OLED + rotary encoder + I2S mic (16-bit) + reserved LED pins
-   Working pins (as used in diagnostic that returned valid data):
-     OLED SDA=21, SCL=22
-     Encoder A=32, B=33, BTN=25
-     I2S SCK(BCLK)=26, WS(LRCLK)=27, SD(DATA)=14
-     Tie L/R pin on mic to GND (left) or 3.3V (right) — keep it tied.
-*/
-
+#include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "driver/i2s.h"
 
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+#define OLED_WIDTH  128
+#define OLED_HEIGHT  64
+#define OLED_PIN_SDA 21
+#define OLED_PIN_SCL 22
+Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
 
 // Encoder pins
-const int pinCLK = 32;
-const int pinDT  = 33;
-const int pinSW  = 25;
+#define ENC_PIN_CLK 32
+#define ENC_PIN_DT  33
+#define ENC_PIN_SW  25
 
 // I2S pins (these matched the diagnostic that produced valid samples)
-#define I2S_BCLK 26
-#define I2S_WS   27
-#define I2S_SD   14
+#define MIC_PIN_SCK 26
+#define MIC_PIN_WS  27
+#define MIC_PIN_SD  14
 
 // LED pins (reserved, not driven)
-#define LED1_PIN 4
-#define LED2_PIN 16
-#define LED3_PIN 17
-#define LED4_PIN 5
+#define LEDS_PIN_A  4
+#define LEDS_PIN_B 16
+#define LEDS_PIN_C 17
+#define LEDS_PIN_D  5
 
 volatile int encoderValue = 0;
 int lastCLK = 0;
@@ -49,10 +44,10 @@ void setupI2SMic() {
   };
 
   i2s_pin_config_t pins = {
-    .bck_io_num = I2S_BCLK,
-    .ws_io_num = I2S_WS,
+    .bck_io_num = MIC_PIN_SCK,
+    .ws_io_num = MIC_PIN_WS,
     .data_out_num = -1,
-    .data_in_num = I2S_SD
+    .data_in_num = MIC_PIN_SD
   };
 
   i2s_driver_install(I2S_NUM_0, &cfg, 0, NULL);
@@ -98,13 +93,13 @@ void setup() {
   Serial.println("Test app starting...");
 
   // Encoder
-  pinMode(pinCLK, INPUT_PULLUP);
-  pinMode(pinDT, INPUT_PULLUP);
-  pinMode(pinSW, INPUT_PULLUP);
-  lastCLK = digitalRead(pinCLK);
+  pinMode(ENC_PIN_CLK, INPUT_PULLUP);
+  pinMode(ENC_PIN_DT, INPUT_PULLUP);
+  pinMode(ENC_PIN_SW, INPUT_PULLUP);
+  lastCLK = digitalRead(ENC_PIN_CLK);
 
   // OLED
-  Wire.begin(21, 22); // SDA, SCL
+  Wire.begin(OLED_PIN_SDA, OLED_PIN_SCL); // SDA, SCL
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println("SSD1306 init failed");
     for (;;) delay(10);
@@ -116,21 +111,21 @@ void setup() {
   setupI2SMic();
 
   // Reserve LED pins so nothing else grabs them (not used in test)
-  pinMode(LED1_PIN, OUTPUT); digitalWrite(LED1_PIN, LOW);
-  pinMode(LED2_PIN, OUTPUT); digitalWrite(LED2_PIN, LOW);
-  pinMode(LED3_PIN, OUTPUT); digitalWrite(LED3_PIN, LOW);
-  pinMode(LED4_PIN, OUTPUT); digitalWrite(LED4_PIN, LOW);
+  pinMode(LEDS_PIN_A, OUTPUT); digitalWrite(LEDS_PIN_A, LOW);
+  pinMode(LEDS_PIN_B, OUTPUT); digitalWrite(LEDS_PIN_B, LOW);
+  pinMode(LEDS_PIN_C, OUTPUT); digitalWrite(LEDS_PIN_C, LOW);
+  pinMode(LEDS_PIN_D, OUTPUT); digitalWrite(LEDS_PIN_D, LOW);
 }
 
 void loop() {
   // -- encoder handling (simple)
-  int currentCLK = digitalRead(pinCLK);
+  int currentCLK = digitalRead(ENC_PIN_CLK);
   if (currentCLK != lastCLK && currentCLK == LOW) {
-    if (digitalRead(pinDT) == HIGH) encoderValue++;
+    if (digitalRead(ENC_PIN_DT) == HIGH) encoderValue++;
     else encoderValue--;
   }
   lastCLK = currentCLK;
-  bool buttonPressed = (digitalRead(pinSW) == LOW);
+  bool buttonPressed = (digitalRead(ENC_PIN_SW) == LOW);
 
   // -- mic read
   MicReading mr = readMic();
