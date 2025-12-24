@@ -16,10 +16,6 @@ public:
     // Get button state (true = pressed)
     bool isButtonPressed();
 
-    // Timestamp of last edge for each pin
-    volatile uint32_t _lastA;
-    volatile uint32_t _lastB;
-
 private:
     // ISR trampolines
     static void IRAM_ATTR isrA(void *arg);
@@ -33,6 +29,10 @@ private:
 
     // Counter
     volatile int32_t _counter;
+
+    // Timestamp of last edge for each pin
+    volatile uint32_t _lastA;
+    volatile uint32_t _lastB;
 
     // Debounce constants
     const uint32_t _debounce_us = 10000; // pin debounce

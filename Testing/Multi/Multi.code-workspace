@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "LEDs",
+			"path": "../LEDs"
+		},
+		{
+			"name": "OLEDModule",
+			"path": "../OLEDModule"
+		}
+	],
+	"settings": {}
+}
