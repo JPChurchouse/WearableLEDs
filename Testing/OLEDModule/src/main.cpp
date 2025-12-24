@@ -6,12 +6,14 @@
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
 // -------- Encoder --------
-#define ENC_A 36
-#define ENC_B 39
+#define ENC_A 39
+#define ENC_B 36
 #define ENC_SW 34
+#define BTN_FUNC 35
 
 volatile int encoderCount = 0;
 volatile bool buttonPressed = false;
+volatile bool func_pressed = false;
 int lastEncoded = 0;
 
 // -------- Encoder ISR --------
@@ -36,6 +38,11 @@ void IRAM_ATTR buttonISR()
   buttonPressed = true;
 }
 
+void IRAM_ATTR funcISR()
+{
+  func_pressed = !func_pressed;
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -46,10 +53,12 @@ void setup()
   pinMode(ENC_A, INPUT_PULLUP);
   pinMode(ENC_B, INPUT_PULLUP);
   pinMode(ENC_SW, INPUT_PULLUP);
+  pinMode(BTN_FUNC, INPUT_PULLUP);
 
   attachInterrupt(digitalPinToInterrupt(ENC_A), encoderISR, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENC_B), encoderISR, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENC_SW), buttonISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(BTN_FUNC), funcISR, FALLING);
 }
 
 static const u8g2_cb_t *rotations[] = {
@@ -93,7 +102,14 @@ void loop()
 
   // ---------- Graphics ----------
   u8g2.drawLine(0, 44, 127, 44);
+  if(func_pressed)
+  {
+    u8g2.drawFilledEllipse(110, 10, 6, U8G2_DRAW_ALL);
+  }
+  else
+  {
   u8g2.drawCircle(110, 10, 6, U8G2_DRAW_ALL);
+  }
 
   // ---------- Animated element ----------
   u8g2.drawFrame(xPos, 50, 6, 10);

@@ -7,8 +7,8 @@
 
 
 // Encoder
-#define ENC_A 36
-#define ENC_B 39
+#define ENC_A 39
+#define ENC_B 36
 #define ENC_SW 34
 
 

@@ -1,18 +1,23 @@
 #pragma once
-#include <FastLED.h>
-#include "../LEDPatterns/LEDPatterns.hpp"
 
+#include <FastLED.h>
+
+using PatternFn = void (*)(CRGB* leds, uint16_t count);
 
 class LEDStrip {
 public:
-LEDStrip(uint8_t pin);
-void begin();
-void setPattern(PatternFn fn);
-void update();
+    LEDStrip(uint8_t pin, uint16_t count);
 
+    void begin();
+    void setPattern(PatternFn fn);
+    void update();
+
+    CRGB* data() { return leds; }
+    uint16_t size() const { return numLeds; }
 
 private:
-CRGB leds[NUM_LEDS];
-uint8_t _pin;
-PatternFn pattern;
+    uint8_t pin;
+    uint16_t numLeds;
+    CRGB* leds = nullptr;
+    PatternFn pattern = nullptr;
 };
