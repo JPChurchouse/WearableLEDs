@@ -11,12 +11,7 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 DodgyRotaryEncoder knob(ENC_PIN_CLK, ENC_PIN_DT, ENC_PIN_SW);
 
-INMP441Audio mic( 
-   MIC_PIN_SCK,
-   MIC_PIN_WS,
-   MIC_PIN_SD,
-   1024,
-   16000); 
+INMP441Audio mic(    32,   25,   33,   1024,   16000); 
 
 void setup()
 {

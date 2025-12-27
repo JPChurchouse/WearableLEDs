@@ -55,8 +55,26 @@ bool INMP441::readSamples(size_t sampleCount) {
         sumSq += (int64_t)s * s;
         if (abs(s) > _peak) _peak = abs(s);
     }
+int64_t sum = 0;
 
-    _rms = sqrt((double)sumSq / count);
+for (size_t i = 0; i < count; i++) {
+    samples[i] >>= 14;   // convert to signed 24-bit
+    sum += samples[i];
+}
+
+int32_t mean = sum / count;
+
+  sumSq = 0;
+_peak = 0;
+
+for (size_t i = 0; i < count; i++) {
+    int32_t s = samples[i] - mean;
+    sumSq += (int64_t)s * s;
+    if (abs(s) > _peak) _peak = abs(s);
+}
+
+_rms = sqrt((double)sumSq / count);
+
     return true;
 }
 

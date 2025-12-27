@@ -1,6 +1,10 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <U8g2lib.h>
+#include "driver/i2s.h"
+#include "INMP441Audio.hpp" 
+
+INMP441Audio mic(    32,   25,   33,   1024,   16000); 
 
 // -------- OLED --------
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
@@ -59,6 +63,8 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(ENC_B), encoderISR, CHANGE);
   attachInterrupt(digitalPinToInterrupt(ENC_SW), buttonISR, FALLING);
   attachInterrupt(digitalPinToInterrupt(BTN_FUNC), funcISR, FALLING);
+  
+  mic.begin();
 }
 
 static const u8g2_cb_t *rotations[] = {
@@ -69,6 +75,8 @@ static const u8g2_cb_t *rotations[] = {
 
 void loop()
 {
+    mic.update();
+
   static uint8_t rotation = 0;
 
   if (buttonPressed)
@@ -84,13 +92,25 @@ void loop()
 
   // ---------- Text + Fonts ----------
   u8g2.setFont(u8g2_font_5x8_tf);
-  u8g2.drawStr(0, 8, "U8g2 feature demo");
+  //u8g2.drawStr(0, 8, "U8g2 feature demo");
 
-  u8g2.setFont(u8g2_font_6x12_tf);
-  u8g2.drawStr(0, 22, "Medium text");
+  //u8g2.setFont(u8g2_font_6x12_tf);
+  //u8g2.drawStr(0, 22, "Medium text");
 
-  u8g2.setFont(u8g2_font_ncenB14_tr);
-  u8g2.drawStr(0, 40, "BIG");
+  //u8g2.setFont(u8g2_font_ncenB14_tr);
+  //u8g2.drawStr(0, 40, "BIG");
+
+    u8g2.setCursor(0, 16);
+    u8g2.print("Bass: ");
+    u8g2.print(mic.getBass());
+
+    u8g2.setCursor(0, 24);
+    u8g2.print("Vol:  ");
+    u8g2.println(mic.getVolume());
+
+    u8g2.setCursor(0, 32);
+    u8g2.print("Freq: ");
+    u8g2.println(mic.getDominantFreq());  
 
   // ---------- Inverted text ----------
   u8g2.setDrawColor(1);
