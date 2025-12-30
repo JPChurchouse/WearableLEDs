@@ -3,7 +3,7 @@
 // ===== CONFIG =====
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER GRB
-#define NUM_LEDS    64          // change to match your strip length
+#define NUM_LEDS    10          // change to match your strip length
 #define BRIGHTNESS  64
 
 // Pins

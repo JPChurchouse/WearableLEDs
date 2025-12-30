@@ -3,76 +3,72 @@
 #include <Wire.h>
 #include "Encoder.hpp"
 #include "Button.hpp"
-#include "Microphone.hpp"
 #include "LEDStrip.hpp"
 #include "LEDStripManager.hpp"
 #include "LEDPatternHandler.hpp"
-#include "BLEManager.hpp"
 #include "Config.hpp"
 
 U8G2_SH1106_128X64_NONAME_F_HW_I2C display(U8G2_R0, U8X8_PIN_NONE);
 
-Encoder encoder(ENC_A, ENC_B, ENC_SW);
-Button bleButton(BTN_BLE);
-Microphone mic(MIC_SCK, MIC_WS, MIC_SD);
-BLEManager ble;
+Encoder encoder(PIN_ENC_A, PIN_ENC_B);
+Button btnSelect = Button(PIN_ENC_SW);
 
-LEDStripManager<LED_A> stripA(NUM_LEDS, 0);
-LEDStripManager<LED_B> stripB(NUM_LEDS, 1);
-LEDStripManager<LED_C> stripC(NUM_LEDS, 2);
-LEDStripManager<LED_D> stripD(NUM_LEDS, 3);
+LEDStripManager<PIN_LED_A> stripA(NUM_LEDS, 0);
+LEDStripManager<PIN_LED_B> stripB(NUM_LEDS, 1);
+LEDStripManager<PIN_LED_C> stripC(NUM_LEDS, 2);
+LEDStripManager<PIN_LED_D> stripD(NUM_LEDS, 3);
 LEDPatternHandler pattern;
 
 void UpdateDisplay();
 
 void setup()
 {
-    Wire.begin(DISP_SDA, DISP_SCL);
+    Wire.begin(PIN_DISP_SDA, PIN_DISP_SCL);
     display.begin();
     encoder.begin();
-    bleButton.begin();
-    mic.begin();
-    // ble.begin();
+    btnSelect.begin();
 
     stripA.begin();
     stripB.begin();
     stripC.begin();
     stripD.begin();
+    FastLED.setBrightness(100);
 }
 
 void loop()
 {
-    if (encoder.wasPressed())
     {
+        auto delta = encoder.getDelta();
+        if (delta > 0)
+            pattern.nextPattern();
+        else if (delta < 0)
+            pattern.previousPattern();
+
+        if (btnSelect.wasPressed())
+            pattern.confirmSelection();
     }
 
-    if (bleButton.wasPressed())
     {
-        // ble.enable(true);
+        pattern.run(stripA.strip());
+        pattern.run(stripB.strip());
+        pattern.run(stripC.strip());
+        pattern.run(stripD.strip());
+        FastLED.show();
     }
-
-    pattern.run();
 
     UpdateDisplay();
-
-    delay(5);
 }
 
-const char *PATTERN_NAMES[] = {
-    "Off",
-    "Odd / Even Swap",
-    "Beat Pulse",
-    "Rainbow March",
-    "Strobe",
-    "VU Meter",
-    "Scanner",
-    "Chaos"};
-
+uint64_t _disp_timestamp = 0;
 void UpdateDisplay()
 {
-    uint8_t selectedIndex = pattern.selection();
-    uint8_t activeIndex = pattern.executing();
-    uint8_t PATTERN_COUNT = pattern.count();
+    auto now = millis();
+    if (now - _disp_timestamp < 25)
+        return;
+    _disp_timestamp = now;
+
+    uint8_t selectedIndex = pattern.getSelectedIndex();
+    uint8_t activeIndex = pattern.getExecutingIndex();
 
     display.clearBuffer();
 
@@ -133,7 +129,7 @@ void UpdateDisplay()
 
         // Text
         display.setCursor(2, y);
-        display.print(PATTERN_NAMES[patternIndex]);
+        display.print(patterns[patternIndex].name);
 
         // Restore draw colour
         display.setDrawColor(1);

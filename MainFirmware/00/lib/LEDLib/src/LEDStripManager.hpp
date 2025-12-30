@@ -23,7 +23,7 @@ public:
     void begin()
     {
         FastLED.addLeds<WS2812B, PIN, GRB>(_strip->leds(), _strip->count());
-        FastLED.setCorrection(TypicalLEDStrip);
+        //FastLED.setCorrection(TypicalLEDStrip);
         FastLED.show();
     }
 

@@ -1,30 +1,39 @@
 #include "Button.hpp"
 
+Button::Button(uint8_t pin) : _pin(pin) {}
 
-volatile bool Button::pressed = false;
-static Button* btnInstance;
+void Button::begin()
+{
+    pinMode(_pin, INPUT_PULLUP);
 
-
-Button::Button(uint8_t pin) : _pin(pin) {
-btnInstance = this;
+    attachInterruptArg(
+        _pin,
+        &Button::isrHandler,
+        this,
+        FALLING);
 }
 
-
-void Button::begin() {
-pinMode(_pin, INPUT_PULLUP);
-attachInterrupt(digitalPinToInterrupt(_pin), isr, FALLING);
+void IRAM_ATTR Button::isrHandler(void *arg)
+{
+    static_cast<Button *>(arg)->handleInterrupt();
 }
 
-
-void IRAM_ATTR Button::isr() {
-pressed = true;
+void IRAM_ATTR Button::handleInterrupt()
+{
+    uint32_t now = millis();
+    if (now - _lastInterruptTime >= _debounceMs)
+    {
+        _pressedFlag = true;
+        _lastInterruptTime = now;
+    }
 }
 
-
-bool Button::wasPressed() {
-if (pressed) {
-pressed = false;
-return true;
-}
-return false;
+bool Button::wasPressed()
+{
+    if (_pressedFlag)
+    {
+        _pressedFlag = false;
+        return true;
+    }
+    return false;
 }

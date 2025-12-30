@@ -1,24 +1,28 @@
 #pragma once
+
 #include <Arduino.h>
 
-
-class Encoder {
+class Encoder
+{
 public:
-Encoder(uint8_t pinA, uint8_t pinB, uint8_t pinSW);
-void begin();
-int32_t getPosition();
-bool wasPressed();
+    Encoder(uint8_t pinA, uint8_t pinB);
 
+    void begin();
+
+    // Returns accumulated movement since last call, then clears it
+    int32_t getDelta();
 
 private:
-static void IRAM_ATTR isrA();
-static void IRAM_ATTR isrB();
-static void IRAM_ATTR isrSW();
+    static void IRAM_ATTR isrHandler(void *arg);
 
+    void IRAM_ATTR handleInterrupt();
 
-static volatile int32_t position;
-static volatile bool pressed;
+    uint8_t _pinA;
+    uint8_t _pinB;
 
+    volatile int32_t _delta = 0;
+    volatile uint8_t _lastState = 0;
+    volatile uint32_t _lastInterruptTime = 0;
 
-uint8_t _pinA, _pinB, _pinSW;
+    uint32_t _debounceUs = 100;
 };

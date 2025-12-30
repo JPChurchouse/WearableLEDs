@@ -7,8 +7,7 @@ class LEDStrip
 {
 private:
     CRGB *_leds = nullptr;
-    uint8_t _count = 0;
-    uint8_t _index = 0;
+    uint8_t _count = 0, _index = 0;
 
 public:
     LEDStrip(uint8_t count, uint8_t index) : _count(count), _index(index)

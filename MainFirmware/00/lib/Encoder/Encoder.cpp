@@ -1,57 +1,65 @@
 #include "Encoder.hpp"
 
+// State transition table
+// Index: (oldState << 2) | newState
+// Values: -1 = CCW, +1 = CW, 0 = invalid/no movement
+static const int8_t transitionTable[16] = {
+    0, -1, 1, 0,
+    1, 0, 0, -1,
+    -1, 0, 0, 1,
+    0, 1, -1, 0};
 
-volatile int32_t Encoder::position = 0;
-volatile bool Encoder::pressed = false;
-
-
-static Encoder* instance;
-
-
-Encoder::Encoder(uint8_t pinA, uint8_t pinB, uint8_t pinSW)
-: _pinA(pinA), _pinB(pinB), _pinSW(pinSW) {
-instance = this;
+Encoder::Encoder(uint8_t pinA, uint8_t pinB)
+    : _pinA(pinA),
+      _pinB(pinB)
+{
 }
 
+void Encoder::begin()
+{
+    pinMode(_pinA, INPUT_PULLUP);
+    pinMode(_pinB, INPUT_PULLUP);
 
-void Encoder::begin() {
-pinMode(_pinA, INPUT);
-pinMode(_pinB, INPUT);
-pinMode(_pinSW, INPUT_PULLUP);
+    uint8_t a = digitalRead(_pinA);
+    uint8_t b = digitalRead(_pinB);
+    _lastState = (a << 1) | b;
 
-
-attachInterrupt(digitalPinToInterrupt(_pinA), isrA, CHANGE);
-attachInterrupt(digitalPinToInterrupt(_pinB), isrB, CHANGE);
-attachInterrupt(digitalPinToInterrupt(_pinSW), isrSW, FALLING);
+    attachInterruptArg(_pinA, &Encoder::isrHandler, this, CHANGE);
+    attachInterruptArg(_pinB, &Encoder::isrHandler, this, CHANGE);
 }
 
-
-void IRAM_ATTR Encoder::isrA() {
-if (digitalRead(instance->_pinA) == digitalRead(instance->_pinB)) position++;
-else position--;
+void IRAM_ATTR Encoder::isrHandler(void *arg)
+{
+    static_cast<Encoder *>(arg)->handleInterrupt();
 }
 
+void IRAM_ATTR Encoder::handleInterrupt()
+{
+    uint32_t now = micros();
+    if (now - _lastInterruptTime < _debounceUs)
+    {
+        return;
+    }
 
-void IRAM_ATTR Encoder::isrB() {
-if (digitalRead(instance->_pinA) != digitalRead(instance->_pinB)) position++;
-else position--;
+    uint8_t a = digitalRead(_pinA);
+    uint8_t b = digitalRead(_pinB);
+    uint8_t newState = (a << 1) | b;
+
+    uint8_t index = (_lastState << 2) | newState;
+    int8_t movement = transitionTable[index];
+
+    if (movement != 0)
+    {
+        _delta += movement;
+    }
+
+    _lastState = newState;
+    _lastInterruptTime = now;
 }
 
-
-void IRAM_ATTR Encoder::isrSW() {
-pressed = true;
-}
-
-
-int32_t Encoder::getPosition() {
-return position;
-}
-
-
-bool Encoder::wasPressed() {
-if (pressed) {
-pressed = false;
-return true;
-}
-return false;
+int32_t Encoder::getDelta()
+{
+    int32_t value = _delta;
+    _delta = 0;
+    return value;
 }
